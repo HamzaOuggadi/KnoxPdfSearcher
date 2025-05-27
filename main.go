@@ -19,7 +19,7 @@ func main() {
 
 	pdfDir := "pdfs"
 	targetName := "Hamza Ouggadi"
-	numWorkers := 20 // Optimized for your i7-12700K
+	numWorkers := 20
 
 	files := []string{}
 
