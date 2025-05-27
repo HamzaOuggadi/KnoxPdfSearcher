@@ -18,8 +18,10 @@ func main() {
 	start := time.Now() // Start timer
 
 	pdfDir := "pdfs"
-	targetName := "Hamza Ouggadi"
+	targetName := "Jhon Doe"
 	numWorkers := 20
+
+	var foundResults []SearchResult
 
 	files := []string{}
 
@@ -95,9 +97,11 @@ func main() {
 	for result := range resultChan {
 		matchCount++
 		fmt.Printf("\n✅ Match #%d in %s:\n%s\n", matchCount, result.FilePath, result.Line)
+		foundResults = append(foundResults, result)
 	}
 
 	elapsed := time.Since(start)
 	fmt.Printf("\nDone! Processed %d files, found %d matches.\n", totalFiles, matchCount)
+	fmt.Printf("Results found: %s \n", foundResults)
 	fmt.Printf("⏱️  Total time: %s\n", elapsed.Round(time.Millisecond))
 }
