@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 type SearchResult struct {
@@ -14,9 +15,11 @@ type SearchResult struct {
 }
 
 func main() {
+	start := time.Now() // Start timer
+
 	pdfDir := "pdfs"
-	targetName := "John Doe"
-	numWorkers := 16 // Can be adjusted based on CPU
+	targetName := "Hamza Ouggadi"
+	numWorkers := 20 // Optimized for your i7-12700K
 
 	files := []string{}
 
@@ -44,11 +47,11 @@ func main() {
 	resultChan := make(chan SearchResult)
 	var wg sync.WaitGroup
 
-	// Progress counter with mutex
+	// Progress counter
 	var processedCount int
 	var countMutex sync.Mutex
 
-	// Step 2: Start worker goroutines
+	// Step 2: Start workers
 	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
 		go func() {
@@ -56,13 +59,12 @@ func main() {
 			for file := range fileChan {
 				found, line := SearchPdfForName(file, targetName)
 
-				// Update progress safely
+				// Update progress
 				countMutex.Lock()
 				processedCount++
 				currentCount := processedCount
 				countMutex.Unlock()
 
-				// Print progress every 10 files
 				if currentCount%10 == 0 || currentCount == totalFiles {
 					fmt.Printf("Processed %d / %d files...\n", currentCount, totalFiles)
 				}
@@ -82,18 +84,20 @@ func main() {
 		close(fileChan)
 	}()
 
-	// Step 4: Close result channel when all workers are done
+	// Step 4: Close results when all done
 	go func() {
 		wg.Wait()
 		close(resultChan)
 	}()
 
-	// Step 5: Collect and print results
+	// Step 5: Collect results
 	matchCount := 0
 	for result := range resultChan {
 		matchCount++
 		fmt.Printf("\n✅ Match #%d in %s:\n%s\n", matchCount, result.FilePath, result.Line)
 	}
 
+	elapsed := time.Since(start)
 	fmt.Printf("\nDone! Processed %d files, found %d matches.\n", totalFiles, matchCount)
+	fmt.Printf("⏱️  Total time: %s\n", elapsed.Round(time.Millisecond))
 }
